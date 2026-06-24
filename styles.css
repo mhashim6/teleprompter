@@ -1,0 +1,422 @@
+/* ==========================================================================
+   TOKENS  ->  future tokens.css  (lifted from the Timeless system)
+   Two themes share one variable set. .theme-day is default; .theme-night flips.
+   ========================================================================== */
+:root, .theme-day{
+  --parchment:#e8dcc2; --parchment-deep:#d9c9a7;
+  --ink:#2b2418; --ink-soft:#5c4f3a; --rule:#8a7652; --oxblood:#6e2a1e;
+  --surface-page:var(--parchment); --surface-panel:var(--parchment-deep);
+  --surface-inset:rgba(139,118,82,.06); --surface-hover:rgba(110,42,30,.07);
+  --text-strong:var(--ink); --text-muted:var(--ink-soft); --text-accent:var(--oxblood);
+  --border-hair:var(--rule); --border-dash:rgba(43,36,24,.20);
+  --accent:var(--oxblood); --accent-quiet:rgba(110,42,30,.45);
+  --selection:rgba(90,107,58,.27);
+  --sheet:#efe6d2; --sheet-border:#c9b78f;       /* the letter "sheet" surface */
+}
+.theme-night{
+  --parchment:#1a1611; --parchment-deep:#25201a;
+  --ink:#d9c9a7; --ink-soft:#a89778; --rule:#6e5c3e; --oxblood:#c8a14a;
+  --surface-inset:rgba(200,160,100,.05); --surface-hover:rgba(200,160,100,.08);
+  --border-dash:rgba(217,201,167,.18); --accent-quiet:rgba(200,161,74,.45);
+  --selection:rgba(200,161,74,.22);
+  --sheet:#25201a; --sheet-border:#3a3128;
+}
+:root{
+  --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --track-label:.34em; --track-runner:.40em;
+  --reader-size:30px;            /* driven by font control */
+  --reader-leading:1.62;         /* driven by leading control */
+  --read-opacity:.4;             /* opacity of already-read words */
+  --read-anchor:22%;             /* reading head position from the top */
+  --texture-tile:48px;            /* noise grain repeat */
+  --bar-h:64px;
+}
+
+/* ==========================================================================
+   BASE  ->  future base.css
+   ========================================================================== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text-strong);
+  background-color:var(--surface-page);
+  background-image:
+    url(assets/noise.png),
+    radial-gradient(circle at 8% 10%,  rgba(140,60,30,.22) 0, transparent 8px),
+    radial-gradient(circle at 92% 14%, rgba(130,55,28,.20) 0, transparent 10px),
+    radial-gradient(circle at 12% 48%, rgba(120,50,22,.18) 0, transparent 9px),
+    radial-gradient(circle at 88% 52%, rgba(135,60,30,.20) 0, transparent 8px),
+    radial-gradient(circle at 50% 30%, rgba(125,55,26,.16) 0, transparent 7px),
+    radial-gradient(circle at 22% 86%, rgba(135,60,30,.20) 0, transparent 9px),
+    radial-gradient(circle at 78% 90%, rgba(125,55,26,.18) 0, transparent 8px),
+    radial-gradient(circle at 50% 70%, rgba(130,55,28,.16) 0, transparent 7px);
+  background-repeat:repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat;
+  background-size:var(--texture-tile) var(--texture-tile),auto,auto,auto,auto,auto,auto,auto,auto;
+  animation:timeless-drift 60s linear infinite;
+  font-family:var(--font-mono); font-weight:400; line-height:1.5;
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+}
+::selection{background:var(--selection)}
+button{font-family:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:0}
+.label{
+  font-size:11px; letter-spacing:var(--track-label); text-transform:uppercase;
+  color:var(--text-muted); font-weight:600;
+}
+.thorn{color:var(--accent)}
+.hidden{display:none !important}
+
+/* ==========================================================================
+   LAYOUT  ->  future layout.css
+   ========================================================================== */
+#app{height:100%; display:flex; flex-direction:column}
+
+/* slide meta strip */
+.meta{
+  flex:0 0 auto; padding:12px 16px 8px; border-bottom:1px solid var(--border-dash);
+}
+.meta-line{display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 14px}
+.meta-num{font-size:14px; font-weight:700; letter-spacing:.12em; text-transform:uppercase}
+.meta-sep{color:var(--accent-quiet)}
+.meta-screen{margin:7px 0 0; font-size:13.5px; color:var(--text-muted); font-style:italic;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.meta-screen b{font-style:normal; font-weight:600; letter-spacing:var(--track-label);
+  text-transform:uppercase; font-size:11px; color:var(--text-muted); margin-right:8px}
+.progress{height:2px; margin-top:10px; background:var(--surface-inset)}
+.progress-fill{height:100%; width:0; background:var(--accent); transition:width .18s linear}
+
+/* reader (scroll surface) — a letter "sheet" floated over the texture */
+.reader-wrap{position:relative; flex:1 1 auto; min-height:0; display:flex; overflow:hidden;
+  font-size:var(--reader-size)}   /* so the guide line's ch width tracks the reading text */
+.reader{
+  flex:1 1 auto; min-height:0; overflow:hidden;
+  display:flex; justify-content:center; align-items:stretch;
+}
+/* the letter "sheet" is a bounded card: it stretches to fill the reader (minus a
+   24px top/bottom margin, so it never bleeds into the chrome) and the TEXT scrolls
+   inside it (the reader-frame), rather than the whole sheet scrolling. Stretching
+   gives the card a definite height, which is what lets the inner area scroll. */
+.sheet{
+  font-size:var(--reader-size);   /* sheet ch now tracks the reading text, not the 16px default */
+  width:min(92vw,52ch); margin:24px auto; flex:0 1 auto;
+  display:flex; flex-direction:column; min-height:0; overflow:hidden;
+  background:var(--sheet); border:1px solid var(--sheet-border);
+  box-shadow:0 1px 0 var(--sheet-border), 0 18px 40px rgba(0,0,0,.18);
+  padding:0 40px;
+}
+.letterhead{
+  flex:0 0 auto;                  /* fixed at the top of the card */
+  display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  padding:18px 0 10px; margin-bottom:6px;
+  border-bottom:1px solid var(--sheet-border);
+  font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:var(--rule);
+}
+/* masthead logo: the §-teleprompter wordmark, promoted out of the 10px label
+   treatment into a noticeable brand mark (matches the share-card wordmark) */
+.lh-mark{
+  white-space:nowrap; font-weight:700; line-height:1;
+  font-size:20px; letter-spacing:-.01em; text-transform:none;
+  color:var(--text-strong);
+}
+.lh-mark .thorn{color:var(--accent); margin-right:.08em}
+.lh-range{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right}
+/* non-scrolling frame: anchors the reading guide and bounds the scroller */
+.reader-frame{position:relative; flex:1 1 auto; min-height:0; width:100%}
+.reader-inner{
+  position:relative; height:100%; overflow-y:auto; overflow-x:hidden; scroll-behavior:smooth;
+  width:100%; margin:0 auto;   /* fills the frame; measure is set by .sheet width */
+  padding:8px 0 70vh;     /* tail room so the last token can still reach the anchor */
+  font-size:var(--reader-size); line-height:var(--reader-leading); letter-spacing:.01em;
+}
+/* mirror/flip act on the fixed-height viewport so a vertical flip stays in
+   place instead of being shoved down by the reader-inner's tall scroll padding */
+.mirror .reader{transform:scaleX(-1)}
+.flip .reader{transform:scaleY(-1)}
+.mirror.flip .reader{transform:scale(-1,-1)}
+.reader-inner p{margin:0 0 .85em}
+/* reading guide at the anchor line — drawn on the (non-scrolling) text frame so
+   it lines up exactly with where auto-scroll parks the current word */
+.guide .reader-frame::before{
+  content:""; position:absolute; top:var(--read-anchor); left:0; right:0; height:0;
+  border-top:1px solid var(--accent-quiet); opacity:.5; pointer-events:none; z-index:2;
+}
+/* word states: upcoming = readable muted ink; spoken = full ink; current = accent */
+.w{color:var(--text-muted); transition:color .18s ease, opacity .18s ease}
+.w.done{color:var(--text-strong); opacity:var(--read-opacity)}
+.w.cur{color:var(--text-accent); font-weight:600; opacity:1}
+/* pause beats: quiet ··· that glow while the highlight dwells on them */
+.pause{display:inline-block; color:var(--accent-quiet); opacity:.45; letter-spacing:.2em;
+  font-size:.62em; vertical-align:middle; user-select:none; transition:color .18s ease, opacity .18s ease}
+.pause.done{opacity:.3}
+.pause.cur{color:var(--text-accent); opacity:1}
+#app:focus{outline:none}
+
+/* next-slide hint + cue */
+.hint{
+  flex:0 0 auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:9px 16px; border-top:1px solid var(--border-dash); min-height:38px;
+}
+.hint .next{font-size:13px; color:var(--text-muted)}
+.hint .next b{color:var(--text-strong); font-weight:600}
+.hint .arrow{color:var(--accent)}
+.hint .timeleft{margin-left:auto; font-size:12.5px; color:var(--text-muted); letter-spacing:.04em; font-variant-numeric:tabular-nums}
+.cue{font-size:12px; letter-spacing:var(--track-label); text-transform:uppercase;
+  color:var(--accent); font-weight:600}
+
+/* control bar */
+.controls{
+  flex:0 0 auto; display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap;
+  padding:10px 16px; border-top:1px solid var(--border-hair);
+  min-height:var(--bar-h);
+}
+.group{display:flex; align-items:center; gap:8px}
+.group.grow{flex:1 1 200px; min-width:160px}
+.spacer{flex:1 1 auto}
+.ctrl-label{font-size:11px; letter-spacing:var(--track-label); text-transform:uppercase; color:var(--text-muted)}
+.readout{font-size:13px; min-width:3.4em; text-align:right; font-variant-numeric:tabular-nums}
+
+/* buttons */
+.icon-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:40px; height:40px; padding:0 10px; gap:6px;
+  background:transparent; border:1px solid var(--border-hair); color:var(--text-strong);
+  font-size:14px; font-weight:500; line-height:1; transition:background .18s ease, border-color .18s ease, color .18s ease;
+}
+.icon-btn:hover{background:var(--surface-hover); border-color:var(--accent-quiet)}
+.icon-btn[aria-pressed="true"]{border-color:var(--accent); color:var(--accent)}
+.icon-btn.small{min-width:34px; height:34px; font-size:13px}
+.play{
+  min-width:104px; height:44px; border:1px solid var(--border-hair); color:var(--accent);
+  background:transparent; font-weight:600; letter-spacing:.08em; text-transform:uppercase; font-size:13px;
+}
+.play::before{content:"\25B8\00a0"}     /* ▸  hairline play mark */
+.play:hover{background:transparent; border-color:var(--accent)}
+
+/* range */
+input[type=range]{
+  -webkit-appearance:none; appearance:none; flex:1 1 auto; height:2px; min-width:90px;
+  background:var(--border-hair); outline-offset:6px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:0;
+  background:var(--accent); cursor:pointer; margin-top:0;
+}
+input[type=range]::-moz-range-thumb{width:14px; height:14px; border-radius:0; border:0; background:var(--accent); cursor:pointer}
+
+/* drawer (library + settings) */
+.scrim{position:fixed; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:40}
+.scrim.open{opacity:1; pointer-events:auto}
+.drawer{
+  position:fixed; top:0; right:0; height:100%; width:min(420px,100vw);
+  background:var(--surface-page); border-left:1px solid var(--border-hair);
+  transform:translateX(100%); transition:transform .22s ease; z-index:50;
+  display:flex; flex-direction:column;
+}
+.drawer.open{transform:none}
+.drawer-head{display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; border-bottom:1px solid var(--border-hair)}
+.drawer-head h2{margin:0; font-size:13px; letter-spacing:var(--track-runner); text-transform:uppercase; font-weight:700}
+.drawer-body{flex:1 1 auto; overflow-y:auto; padding:6px 0}
+.section-head{padding:16px 16px 6px; font-size:11px; letter-spacing:var(--track-label);
+  text-transform:uppercase; color:var(--text-muted); font-weight:600}
+
+/* deck rows */
+.deck{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px dashed var(--border-dash); transition:background .18s ease}
+.deck:hover{background:var(--surface-hover)}
+.deck.active{background:var(--surface-inset)}
+.deck-main{flex:1 1 auto; min-width:0; text-align:left; background:transparent; border:0; padding:0}
+.deck-title{font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.deck.active .deck-title{color:var(--accent); font-weight:600}
+.deck-sub{font-size:12px; color:var(--text-muted); margin-top:3px; letter-spacing:.03em}
+.deck-acts{display:flex; gap:6px; flex:0 0 auto}
+
+/* settings toggles */
+.setting{display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 16px; border-bottom:1px dashed var(--border-dash)}
+.setting .desc{font-size:13.5px}
+.setting .sub{font-size:12px; color:var(--text-muted); margin-top:3px}
+
+/* upload / empty */
+.uploader{padding:14px 16px}
+.dropzone{
+  border:1px dashed var(--border-hair); padding:18px; text-align:center;
+  color:var(--text-muted); font-size:12.5px; transition:border-color .18s ease, background .18s ease;
+}
+.dropzone.drag{border-color:var(--accent); background:var(--surface-hover); color:var(--text-strong)}
+.empty{flex:1 1 auto; display:flex; align-items:center; justify-content:center; padding:24px}
+.empty-card{max-width:440px; text-align:center}
+.empty-card .big{font-size:34px; letter-spacing:.04em; margin-bottom:8px}
+.empty-card p{color:var(--text-muted); font-size:13px; line-height:1.7; margin:.5em 0 1.3em}
+.empty-card .dropzone{margin-top:6px}
+code{background:var(--surface-inset); padding:1px 5px; font-size:.9em}
+
+/* toast */
+.toast{position:fixed; left:50%; bottom:calc(var(--bar-h) + 16px); transform:translateX(-50%);
+  background:var(--text-strong); color:var(--surface-page); font-size:12px; padding:9px 16px;
+  letter-spacing:.02em; opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:60; max-width:90vw}
+.toast.show{opacity:1}
+
+/* ==========================================================================
+   DECK STUDIO  ->  full-screen editor overlay
+   Reuses the tokens + .icon-btn/.play/input[type=range] components. A solid
+   parchment surface above the drawer (z 55) but below the toast (z 60) so
+   "saved" still shows. Hidden via opacity+visibility so it can fade.
+   ========================================================================== */
+.studio{
+  position:fixed; inset:0; z-index:55; overflow-y:auto;
+  background:var(--surface-page); color:var(--text-strong);
+  opacity:0; visibility:hidden; transition:opacity .2s ease;
+}
+.studio.open{opacity:1; visibility:visible}
+
+.studio-head{
+  position:sticky; top:0; z-index:1;
+  display:flex; align-items:center; justify-content:space-between; gap:12px 18px; flex-wrap:wrap;
+  padding:14px 20px; background:var(--surface-page);
+  border-bottom:1px solid var(--border-hair);
+}
+.studio-head-left{flex:1 1 220px; min-width:160px}
+.studio-title{
+  width:100%; background:transparent; border:0; border-bottom:1px solid var(--border-dash);
+  color:var(--text-strong); font-family:var(--font-mono); font-weight:600;
+  font-size:18px; letter-spacing:.02em; padding:6px 2px;
+}
+.studio-title:focus{outline:none; border-bottom-color:var(--accent)}
+.studio-head-right{display:flex; align-items:center; gap:12px 16px; flex-wrap:wrap}
+.studio-pace{display:flex; align-items:center; gap:8px; min-width:180px}
+.studio-total{
+  font-size:12.5px; color:var(--text-muted); letter-spacing:.03em;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.studio-acts{display:flex; align-items:center; gap:8px}
+
+.studio-body{max-width:860px; margin:0 auto; padding:20px}
+.studio-list{display:flex; flex-direction:column; gap:16px}
+
+/* a slide card */
+.studio-slide{
+  border:1px solid var(--border-hair); background:var(--surface-inset);
+  padding:14px 16px 12px;
+}
+.studio-slide-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px}
+.studio-slide-num{font-size:11px; font-weight:700; letter-spacing:var(--track-label); text-transform:uppercase; color:var(--text-muted)}
+.studio-slide-acts{display:flex; gap:6px}
+.studio-slide-acts .icon-btn[disabled]{opacity:.3; cursor:not-allowed}
+
+.studio-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px 14px; margin-bottom:12px}
+.studio-field{display:flex; flex-direction:column; gap:4px; min-width:0}
+.studio-field-label{font-size:11px; letter-spacing:var(--track-label); text-transform:uppercase; color:var(--text-muted)}
+.studio-input,.studio-script{
+  background:var(--sheet); border:1px solid var(--sheet-border); color:var(--text-strong);
+  font-family:var(--font-mono); font-size:13.5px; padding:7px 9px; width:100%;
+}
+.studio-input:focus,.studio-script:focus{outline:none; border-color:var(--accent)}
+.studio-script{display:block; width:100%; line-height:1.55; resize:vertical; min-height:96px}
+
+.studio-slide-foot{display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap}
+.studio-readout{font-size:12.5px; color:var(--text-muted); letter-spacing:.03em; font-variant-numeric:tabular-nums; margin-left:auto}
+.studio-target{font-size:12.5px; font-variant-numeric:tabular-nums; letter-spacing:.03em}
+.studio-target.over{color:var(--accent); font-weight:600}
+.studio-target.under{color:var(--text-muted)}
+
+.studio-addrow{margin:18px 0 6px; text-align:center}
+.studio-newrow{padding:4px 16px 6px}
+
+@media (max-width:560px){
+  .studio-head{padding:12px 14px}
+  .studio-body{padding:14px}
+  .studio-readout{margin-left:0}
+}
+
+/* ==========================================================================
+   WELCOME  ->  coach-marks for the self-running landing session
+   Small parchment chips anchored above their control via the group's relative
+   box (no JS positioning, so they track the buttons on resize). Lifecycle is
+   JS-driven (ui.js loadWelcome / dismissCoachMarks); these are styles only.
+   ========================================================================== */
+.controls .group{position:relative}      /* anchor box for coach-marks (inert) */
+.coach{
+  position:absolute; bottom:100%; margin-bottom:12px; z-index:30;
+  pointer-events:none; white-space:nowrap; max-width:calc(100vw - 24px);
+  background:var(--surface-panel); color:var(--text-accent);
+  border:1.5px solid var(--accent);      /* solid accent edge — reads against parchment */
+  font-size:10px; letter-spacing:var(--track-label); text-transform:uppercase; font-weight:600;
+  padding:5px 9px; box-shadow:0 4px 14px rgba(0,0,0,.22);
+  opacity:1; transition:opacity .22s ease;
+  animation:coach-bob 2.4s ease-in-out infinite;
+}
+/* edge-aware anchoring so the left (play) and right (menu) marks stay on screen */
+.coach-center{left:50%; transform:translateX(-50%)}
+.coach-start{left:0}
+.coach-end{right:0}
+.coach::after{                            /* downward pointer to the control */
+  content:""; position:absolute; top:100%;
+  border:6px solid transparent; border-top-color:var(--accent);
+}
+.coach-center::after{left:50%; transform:translateX(-50%)}
+.coach-start::after{left:18px}
+.coach-end::after{right:18px}
+.coach.is-hiding{opacity:0; animation:none}   /* dismissed: fade only, no reflow */
+@keyframes coach-bob{ 0%,100%{margin-bottom:12px} 50%{margin-bottom:15px} }
+@media (prefers-reduced-motion:reduce){ .coach{animation:none} }
+
+/* ==========================================================================
+   PRESENTATION MODE  ->  camera-strip while playing
+   Narrow measure, larger type, reading head pinned near the lens; only the
+   essential chrome stays. Added/removed by the `presenting` body class.
+   ========================================================================== */
+.presenting{--read-anchor:12%}
+/* hide non-essential chrome: meta text, next-slide hint, theme + library + slide-pace */
+.presenting .meta-line,
+.presenting .meta-screen,
+.presenting .hint .next,
+.presenting .hint .cue,
+.presenting .theme-trigger,
+.presenting .lib-trigger,
+.presenting #usePace{display:none}
+/* keep a slim progress bar (drop the meta strip's padding/border to a hairline) */
+.presenting .meta{padding:0; border-bottom:0}
+.presenting .meta .progress{margin-top:0}
+.presenting .letterhead{opacity:.5}
+.presenting .sheet{box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.presenting .reader-inner{font-size:calc(var(--reader-size)*1.25)}
+.presenting .sheet{width:min(92vw,40ch)}                 /* narrower camera-strip; guide tracks the frame */
+/* time-left stays; pin it to the right of the (now slim) hint row */
+.presenting .hint{justify-content:flex-end; min-height:0; padding-top:6px; padding-bottom:6px}
+.presenting .hint .timeleft{margin-left:0}
+
+/* responsive */
+@media (max-width:560px){
+  :root{--reader-size:26px}
+  .controls{gap:8px 10px; padding:8px 12px}
+  .group.grow{flex-basis:140px; min-width:120px}
+  .ctrl-label{display:none}
+  .play{min-width:88px}
+  .meta,.hint{padding-left:12px; padding-right:12px}
+  .sheet{padding:0 22px}
+  .lh-mark{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important}
+  .reader{scroll-behavior:auto}
+  body{animation:none}
+}
+
+
+/* Timeless texture surface (night): lighter grain over the dark board, faint gilt foxing */
+.theme-night body{
+  background-image:
+    url(assets/noise-light.png),
+    radial-gradient(circle at 8% 10%,  rgba(200,160,100,.06) 0, transparent 8px),
+    radial-gradient(circle at 92% 14%, rgba(200,160,100,.05) 0, transparent 10px),
+    radial-gradient(circle at 12% 48%, rgba(200,160,100,.05) 0, transparent 9px),
+    radial-gradient(circle at 88% 52%, rgba(200,160,100,.06) 0, transparent 8px),
+    radial-gradient(circle at 50% 30%, rgba(200,160,100,.04) 0, transparent 7px),
+    radial-gradient(circle at 22% 86%, rgba(200,160,100,.06) 0, transparent 9px),
+    radial-gradient(circle at 78% 90%, rgba(200,160,100,.05) 0, transparent 8px),
+    radial-gradient(circle at 50% 70%, rgba(200,160,100,.04) 0, transparent 7px);
+}
+@keyframes timeless-drift{
+  from{background-position:0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0}
+  to{background-position:96px 96px,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0}
+}

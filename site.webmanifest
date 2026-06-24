@@ -1,0 +1,16 @@
+{
+  "name": "teleprompter",
+  "short_name": "teleprompter",
+  "description": "A small, dependency-free teleprompter — read your script one word at a time.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#e8dcc2",
+  "theme_color": "#e8dcc2",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ]
+}

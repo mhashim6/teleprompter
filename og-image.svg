@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="teleprompter — read your script, one word at a time">
+  <!-- parchment ground -->
+  <rect width="1200" height="630" fill="#e8dcc2"/>
+  <!-- faint foxing glow, echoing the app surface -->
+  <circle cx="150" cy="120" r="210" fill="#8c3c1e" opacity="0.05"/>
+  <circle cx="1080" cy="560" r="230" fill="#8c3c1e" opacity="0.05"/>
+  <!-- dashed inset frame, like the letter sheet -->
+  <rect x="48" y="48" width="1104" height="534" fill="none"
+        stroke="#2b2418" stroke-opacity="0.22" stroke-width="2" stroke-dasharray="2 9"/>
+  <!-- wordmark (left-aligned; text-anchor:start is honored everywhere) -->
+  <text x="92" y="300"
+        font-family="'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace"
+        font-weight="700" font-size="64" letter-spacing="-1">
+    <tspan fill="#6e2a1e">§ </tspan><tspan fill="#2b2418">teleprompter</tspan>
+  </text>
+  <!-- dashed rule -->
+  <line x1="96" y1="350" x2="430" y2="350"
+        stroke="#6e2a1e" stroke-opacity="0.45" stroke-width="2" stroke-dasharray="2 9"/>
+  <!-- tagline -->
+  <text x="96" y="406"
+        font-family="'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace"
+        font-weight="400" font-size="26" fill="#5c4f3a">read your script, one word at a time</text>
+  <!-- url footer, tracked uppercase like the app's labels -->
+  <text x="96" y="544"
+        font-family="'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace"
+        font-weight="600" font-size="20" fill="#8a7652" letter-spacing="5">TELEPROMPTER.MHASHIM6.ME</text>
+</svg>

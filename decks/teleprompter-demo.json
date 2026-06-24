@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "title": "Teleprompter demo",
+    "id": "teleprompter-demo"
+  },
+  "slides": [
+    {
+      "number": 1,
+      "title": "Introduction",
+      "type": "content",
+      "onScreen": "Introduction",
+      "script": "As many people feel, the greatest thing about this chaotic time of AI is the ability to build personalised apps that solve a niche problem in almost[[pause]] no time [[pause:1.0]]Personally have been building many things tailored to fix very specific issues that albeit useful to me, not worth the weeks I'd have to spend building them by hand.",
+      "estimatedMinutes": 0.5
+    },
+    {
+      "number": 2,
+      "title": "About the app",
+      "type": "content",
+      "onScreen": "About the app",
+      "script": "One niche thing I needed recently is a place where I can author my notes or even an entire dictation of a slide deck I'm going to present. It had to be \"aware\" of the slide's context and the duration of the speech. PowerPoint notes can be useful here but lacks in so many aspects. [[pause]] I wanted something that felt like a teleprompter [[pause]] in fact, I wanted a teleprompter!",
+      "estimatedMinutes": 0.5
+    },
+    {
+      "number": 3,
+      "title": "The Reveal",
+      "type": "content",
+      "onScreen": "Screenshare",
+      "script": "So I built one! ¯\\_(ツ)_/¯ [[pause]] \n\nTo be perfectly honest, it's more than a luxury, but the fact that I could whip it up in no time in the background was more than enough reason to go ahead and do it[[pause]]",
+      "estimatedMinutes": 0.5
+    }
+  ]
+}

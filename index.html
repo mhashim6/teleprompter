@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en" class="theme-day">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>teleprompter — read your script, one word at a time</title>
+<meta name="description" content="A small, dependency-free teleprompter: load a JSON deck and play your script back word by word at a pace you control — highlighted word, pause beats, day/night, mirror.">
+<meta name="application-name" content="teleprompter">
+<meta name="theme-color" content="#e8dcc2">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://teleprompter.mhashim6.me/">
+
+<!-- icons + PWA manifest (relative paths so they work over file:// and when served) -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-title" content="teleprompter">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="teleprompter">
+<meta property="og:title" content="teleprompter — read your script, one word at a time">
+<meta property="og:description" content="A small, dependency-free teleprompter: load a JSON deck and play your script back word by word at a pace you control.">
+<meta property="og:url" content="https://teleprompter.mhashim6.me/">
+<meta property="og:image" content="https://teleprompter.mhashim6.me/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="teleprompter — read your script, one word at a time">
+
+<!-- Twitter card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="teleprompter — read your script, one word at a time">
+<meta name="twitter:description" content="A small, dependency-free teleprompter: load a JSON deck and play your script back word by word at a pace you control.">
+<meta name="twitter:image" content="https://teleprompter.mhashim6.me/og-image.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300..700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="guide">
+<div id="app" tabindex="-1">
+
+  <!-- reader (letter sheet) -->
+  <div class="reader-wrap hidden" id="readerWrap">
+    <main class="reader" id="reader" aria-label="script">
+      <div class="sheet">
+        <div class="letterhead">
+          <span class="lh-mark"><span class="thorn">&#167;</span> teleprompter</span>
+          <span class="lh-range" id="deckName">no deck loaded</span>
+        </div>
+        <div class="reader-frame">
+          <div class="reader-inner" id="readerInner"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- empty state -->
+  <section class="empty" id="empty">
+    <div class="empty-card">
+      <div class="big"><span class="thorn">&#167;</span></div>
+      <div class="label">teleprompter</div>
+      <p>Drop a teleprompter JSON here, or choose a file to begin. Decks are kept on this device; each remembers where you left off.</p>
+      <div class="dropzone" id="emptyDrop">
+        drag a <code>.json</code> file here
+        <div style="margin-top:12px"><button class="icon-btn" id="emptyPick">choose file</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- bottom chrome: meta -> hint -> controls -->
+  <!-- slide meta -->
+  <section class="meta hidden" id="meta">
+    <div class="meta-line">
+      <span class="meta-num" id="mNum">slide</span>
+      <span class="meta-sep">&#167;</span>
+      <span class="label" id="mType">type</span>
+      <span class="meta-sep">&#167;</span>
+      <span class="label" id="mEst">est</span>
+      <span class="label" id="mWords"></span>
+    </div>
+    <p class="meta-screen" id="mScreen"><b>on screen</b><span id="mScreenTxt"></span></p>
+    <div class="progress"><div class="progress-fill" id="progress"></div></div>
+  </section>
+
+  <!-- next hint -->
+  <section class="hint hidden" id="hint">
+    <span class="next" id="next"></span>
+    <span class="cue hidden" id="cue"></span>
+    <span class="timeleft" id="timeleft"></span>
+  </section>
+
+  <!-- controls -->
+  <footer class="controls hidden" id="controls">
+    <div class="group">
+      <button class="icon-btn small" id="prevBtn" aria-label="previous slide">&#9665;</button>
+      <button class="play" id="playBtn" aria-pressed="false">play</button>
+      <button class="icon-btn small" id="nextBtn" aria-label="next slide">&#9655;</button>
+      <button class="icon-btn small" id="restartBtn" aria-label="restart slide">&#8635;</button>
+    </div>
+
+    <div class="group grow">
+      <span class="ctrl-label">pace</span>
+      <input type="range" id="wpm" min="60" max="220" step="5" value="130" aria-label="words per minute">
+      <span class="readout"><span id="wpmOut">130</span><span class="ctrl-label"> wpm</span></span>
+    </div>
+
+    <div class="group">
+      <span class="ctrl-label">size</span>
+      <button class="icon-btn small" id="fontDown" aria-label="smaller text">A&#8722;</button>
+      <button class="icon-btn small" id="fontUp" aria-label="larger text">A&#43;</button>
+    </div>
+
+    <div class="group">
+      <span class="ctrl-label">leading</span>
+      <button class="icon-btn small" id="leadDown" aria-label="tighter line spacing">&#8722;</button>
+      <button class="icon-btn small" id="leadUp" aria-label="looser line spacing">&#43;</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="group">
+      <button class="icon-btn small" id="usePace" title="use this slide's own pace">slide pace</button>
+      <button class="icon-btn small theme-trigger" id="themeBtn" aria-label="toggle day / night">&#9728;</button>
+      <button class="icon-btn small lib-trigger" id="libBtn" aria-label="open library">&#9776;</button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- drawer -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="library and settings">
+  <div class="drawer-head">
+    <h2>library</h2>
+    <button class="icon-btn small" id="drawerClose" aria-label="close">&#10005;</button>
+  </div>
+  <div class="drawer-body">
+    <div class="uploader">
+      <div class="dropzone" id="drop">
+        drag a <code>.json</code> deck here
+        <div style="margin-top:12px"><button class="icon-btn small" id="pick">choose file</button></div>
+      </div>
+    </div>
+    <div class="section-head">decks</div>
+    <div class="studio-newrow"><button class="icon-btn small" id="newDeckBtn">&#43; new deck</button></div>
+    <div id="deckList"></div>
+
+    <div class="section-head">settings</div>
+    <div class="setting">
+      <div><div class="desc">mirror text</div><div class="sub">flip horizontally for beam-splitter glass</div></div>
+      <button class="icon-btn small" id="mirrorBtn" aria-pressed="false">off</button>
+    </div>
+    <div class="setting">
+      <div><div class="desc">flip text</div><div class="sub">flip vertically; combines with mirror</div></div>
+      <button class="icon-btn small" id="flipBtn" aria-pressed="false">off</button>
+    </div>
+    <div class="setting">
+      <div><div class="desc">centre guide line</div><div class="sub">a hairline at the reading position</div></div>
+      <button class="icon-btn small" id="guideBtn" aria-pressed="true">on</button>
+    </div>
+    <div class="setting">
+      <div><div class="desc">auto-scroll</div><div class="sub">keep the current word centred</div></div>
+      <button class="icon-btn small" id="scrollBtn" aria-pressed="true">on</button>
+    </div>
+    <div class="setting">
+      <div><div class="desc">auto-advance slides</div><div class="sub">move on when a slide finishes</div></div>
+      <button class="icon-btn small" id="advanceBtn" aria-pressed="false">off</button>
+    </div>
+  </div>
+</aside>
+
+<input type="file" id="file" accept=".json,application/json" class="hidden">
+<div class="toast" id="toast"></div>
+
+<!-- classic scripts, loaded in dependency order; share window.TP -->
+<script src="src/constants.js"></script>
+<script src="src/schema.js"></script>
+<script src="src/engine.js"></script>
+<script src="src/store.js"></script>
+<script src="src/prompter.js"></script>
+<script src="src/viewmodel.js"></script>
+<script src="src/studio.js"></script>
+<script src="src/welcome.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/studio-ui.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
