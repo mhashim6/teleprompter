@@ -22,16 +22,18 @@ node --test
 ```
 
 This covers the schema normaliser, the timing engine, the playback shell (via an
-injected scheduler), the storage layer (via a mock backend), the view-model, and the
-deck-editor core (`studio.js`), and the landing-session data (`welcome.js`). The DOM
+injected scheduler), the storage layer (via a mock backend), the view-model, the
+deck-editor core (`studio.js`), the landing-session data (`welcome.js`), and the
+`.deck.md` compiler (`tools/deck.js`). The DOM
 shells (`ui.js`, `studio-ui.js`) are verified by
 hand — see the manual checklist in `HANDOFF.md`.
 
 ## Authoring a deck
 
-Two ways:
+Three ways:
 
 - **In-app (Deck Studio).** Open the menu (bottom right) and choose **new deck**, or press the edit (pencil) icon on any deck in the library. The studio is a full-screen editor: add, duplicate, reorder, and delete slides; edit each slide's title, type, on-screen cue, and script (pause beats are written inline as `[[pause]]` or `[[pause:1.5]]`); and watch a live `words · ~m:ss` readout per slide and for the whole deck at the current pace. Optionally set a per-slide *target* minutes to compare against the real duration. Save keeps the deck on this device (editing updates it in place); **download** writes the `.json` file.
+- **From source material (the `deck-author` skill).** In Claude Code, the `deck-author` skill turns a PowerPoint, PDF, screenshots, or pasted notes into a finished deck: it interviews you, drafts the spoken narration in a chosen voice with smart pause beats into a readable `decks/<slug>.deck.md`, then compiles it with `tools/deck.js` and reports the exact duration so you can tune the timing. The compiler reuses the app's own `src/schema.js` + `src/engine.js`, so the reported timing matches playback. You can also run it directly: `node tools/deck.js decks/<slug>.deck.md --wpm 130`. See `.claude/skills/deck-author/`.
 - **Script.** Edit the `slides` list in `tools/build_teleprompter.py` and run `python3 tools/build_teleprompter.py` from the repo root to regenerate `decks/teleprompter-slides-64-69.json`.
 
 Pause beats go in the script text as `[[pause]]` (one second) or `[[pause:1.5]]` (custom). The full JSON contract is in `HANDOFF.md`, section 3.

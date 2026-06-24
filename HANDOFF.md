@@ -26,8 +26,11 @@ src/studio-ui.js    StudioUI: the deck-editor overlay (DOM shell over Studio)
 src/app.js          boot
 test/               node:test suites for the pure modules + the prompter shell
 assets/             noise.png (day grain), noise-light.png (night grain)
-decks/              sample deck JSON
-tools/              build_teleprompter.py, the deck author script
+decks/              sample deck JSON (+ <slug>.deck.md authoring sources)
+tools/              build_teleprompter.py (legacy sample generator);
+                    deck.js (.deck.md -> deck JSON compiler + duration report)
+.claude/skills/     deck-author/ — the agent skill that authors a deck from a
+                    PPT / PDF / screenshots / text (drives tools/deck.js)
 README.md           quick start
 HANDOFF.md          this file
 
@@ -57,6 +60,19 @@ Scripts load in dependency order: `constants → schema → engine → store →
 viewmodel → studio → ui → studio-ui → app`.
 
 Run by opening `index.html` directly or by serving the folder (see README). Both work, because the scripts are classic scripts and assets use relative paths.
+
+**Authoring from source (the `deck-author` skill).** A third authoring path lives at
+`.claude/skills/deck-author/`. The agent ingests a PPT / PDF / screenshots / text,
+writes the narration with pause beats into a human-readable `decks/<slug>.deck.md`
+(format in the skill's `references/format.md`), and compiles it with `tools/deck.js`.
+That compiler is the deterministic half: it `require()`s the app's own
+`src/schema.js` + `src/engine.js` (the same `global.window=global` pattern as `test/`),
+so word counts, the pause model, and the **duration report cannot drift from
+playback**. It emits the same raw deck JSON the player consumes (§3), stamps a stable
+`meta.id` from the title (§3.3), and is unit-tested in `test/deck.test.js`. PPTX text +
+speaker notes are pulled by a throwaway stdlib extractor generated at run time (not
+committed), which rejects XML carrying a DOCTYPE/ENTITY declaration as an
+XXE / entity-expansion guard.
 
 ## 3. The JSON contract
 
