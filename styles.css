@@ -294,6 +294,21 @@ code{background:var(--surface-inset); padding:1px 5px; font-size:.9em}
 .studio-acts{display:flex; align-items:center; gap:8px}
 
 .studio-body{max-width:860px; margin:0 auto; padding:20px}
+
+/* quiet pointer to the deck-author skill (the from-source authoring path) */
+.studio-hint{
+  display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+  margin:0 0 16px; padding:10px 12px;
+  border:1px dashed var(--border-dash); background:var(--surface-inset);
+  font-size:12.5px; color:var(--text-muted); line-height:1.55;
+}
+.studio-hint-mark{color:var(--text-accent); font-weight:700}
+.studio-hint-link{
+  color:var(--text-accent); text-decoration:none;
+  border-bottom:1px solid currentColor; white-space:nowrap;
+}
+.studio-hint-link:hover{color:var(--text-strong)}
+
 .studio-list{display:flex; flex-direction:column; gap:16px}
 
 /* a slide card */
