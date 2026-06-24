@@ -25,10 +25,10 @@ TP.Welcome = Object.freeze({
         script:
           "This is a teleprompter. [[pause]] It reads your script back to you one " +
           "word at a time, lighting up where you are so your eyes never lose the " +
-          "line. [[pause:1.2]] Press space to start or stop. Drag the pace slider to " +
-          "find your speed, and open the menu at the bottom right to load a deck or " +
-          "build your own in the studio. [[pause]] When you're ready, drop in your " +
-          "words, and let's begin."
+          "line. [[pause:1.2]] Press play to start or stop, and use the pace slider " +
+          "to find your speed. Open the menu to load a deck or build your own in " +
+          "the studio. [[pause]] When you're ready, drop in your words, and let's " +
+          "begin."
       }
     ]
   }

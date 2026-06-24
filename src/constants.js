@@ -33,6 +33,5 @@ TP.Const = Object.freeze({
   AUTOADVANCE_MS: 700,      // delay before auto-advancing to the next slide
 
   // reading layout
-  READER_SIZE_BASE: 30,     // px, before the font multiplier
   DEFAULT_READ_ANCHOR: 0.22 // fraction of reader height; mirrors CSS --read-anchor
 });

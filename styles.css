@@ -24,7 +24,9 @@
 :root{
   --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   --track-label:.34em; --track-runner:.40em;
-  --reader-size:30px;            /* driven by font control */
+  --reader-base:30px;            /* base reading size (px); overridden per breakpoint below */
+  --font-scale:1;                /* multiplier set inline by the A-/A+ font control */
+  --reader-size:calc(var(--reader-base) * var(--font-scale));
   --reader-leading:1.62;         /* driven by leading control */
   --read-opacity:.4;             /* opacity of already-read words */
   --read-anchor:22%;             /* reading head position from the top */
@@ -127,6 +129,7 @@ button{font-family:inherit; color:inherit; cursor:pointer}
   width:100%; margin:0 auto;   /* fills the frame; measure is set by .sheet width */
   padding:8px 0 70vh;     /* tail room so the last token can still reach the anchor */
   font-size:var(--reader-size); line-height:var(--reader-leading); letter-spacing:.01em;
+  overflow-wrap:break-word;   /* a word wider than the sheet wraps instead of clipping */
 }
 /* mirror/flip act on the fixed-height viewport so a vertical flip stays in
    place instead of being shoved down by the reader-inner's tall scroll padding */
@@ -387,14 +390,21 @@ code{background:var(--surface-inset); padding:1px 5px; font-size:.9em}
 
 /* responsive */
 @media (max-width:560px){
-  :root{--reader-size:26px}
-  .controls{gap:8px 10px; padding:8px 12px}
-  .group.grow{flex-basis:140px; min-width:120px}
+  :root{--reader-base:26px}     /* now lives (calc), so the smaller base actually applies */
   .ctrl-label{display:none}
   .play{min-width:88px}
   .meta,.hint{padding-left:12px; padding-right:12px}
   .sheet{padding:0 22px}
   .lh-mark{font-size:16px}
+
+  /* Issue 3A — intentional rows: transport centred, pace full-width, toggles below.
+     Centred wrapping needs the desktop .spacer out of the way. */
+  .controls{gap:8px 10px; padding:8px 12px; justify-content:center}
+  .controls .spacer{display:none}
+  .group.grow{flex:1 1 100%; min-width:0}   /* pace slider claims its own row */
+
+  /* Issue 2A — the anchored welcome hints can't sit cleanly above a wrapped bar */
+  .coach{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important}

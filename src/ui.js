@@ -43,7 +43,9 @@ TP.UI = (function(){
   function applyPrefs(){
     document.documentElement.className = "theme-"+prefs.theme;
     el.themeBtn.innerHTML = prefs.theme==="night" ? "&#9790;" : "&#9728;"; // moon / sun
-    document.documentElement.style.setProperty("--reader-size", (C.READER_SIZE_BASE*prefs.fontScale).toFixed(1)+"px");
+    // set the multiplier only; CSS owns the per-breakpoint base (--reader-base)
+    // so the responsive size reduction stays live instead of being overridden inline
+    document.documentElement.style.setProperty("--font-scale", (+prefs.fontScale).toFixed(3));
     document.documentElement.style.setProperty("--reader-leading", (+prefs.lineHeight).toFixed(2));
     document.body.classList.toggle("guide", !!prefs.guide);
     document.body.classList.toggle("mirror", !!prefs.mirror);
