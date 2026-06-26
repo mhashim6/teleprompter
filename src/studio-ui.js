@@ -119,13 +119,13 @@ TP.StudioUI = (function(){
     // body: authoring hint -> slide list -> add
     const body = document.createElement("div"); body.className = "studio-body";
 
-    // A quiet pointer to the other authoring path: the deck-author skill, which
-    // builds a deck from a PPT / PDF / notes in Claude Code. Text only (this is
+    // A quiet pointer to the other authoring path: the tele-author skill, which
+    // builds a deck from a PPT / PDF / notes in the Claude app. Text only (this is
     // a browser; the skill runs in the agent), with a link to the docs.
     const hint = document.createElement("div"); hint.className = "studio-hint";
     const hintMark = document.createElement("span"); hintMark.className = "studio-hint-mark"; hintMark.textContent = "§";
     const hintText = document.createElement("span");
-    hintText.textContent = "starting from a slide deck? the deck-author skill turns a PowerPoint, PDF, or notes into a deck in Claude Code. ";
+    hintText.textContent = "starting from a slide deck? the tele-author skill turns a PowerPoint, PDF, or notes into a deck in the Claude app. ";
     const hintLink = document.createElement("a");
     hintLink.className = "studio-hint-link";
     hintLink.href = "https://github.com/mhashim6/teleprompter#authoring-a-deck";

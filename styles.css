@@ -295,7 +295,7 @@ code{background:var(--surface-inset); padding:1px 5px; font-size:.9em}
 
 .studio-body{max-width:860px; margin:0 auto; padding:20px}
 
-/* quiet pointer to the deck-author skill (the from-source authoring path) */
+/* quiet pointer to the tele-author skill (the from-source authoring path) */
 .studio-hint{
   display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
   margin:0 0 16px; padding:10px 12px;
