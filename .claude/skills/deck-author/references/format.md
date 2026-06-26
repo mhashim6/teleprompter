@@ -77,52 +77,13 @@ followed, when a `target` is set, by `[target m:ss, ±delta]` and an
 outside the slider range — a sign the slide is too dense or too thin for its
 target.
 
-## Extracting a `.pptx` (generate, run, inspect, delete — do not commit)
+## Extracting a `.pptx`
 
-PowerPoint files are zip archives of XML. Use this dependency-free `python3`
-stdlib extractor. Write it to a temp path (e.g. under the job tmp dir), run it,
-read the JSON it prints, confirm it looks right, then remove the script.
-
-```python
-# pptx_extract.py — print per-slide text + speaker notes from a .pptx (stdlib only)
-import sys, json, zipfile, re
-import xml.etree.ElementTree as ET
-
-T = "{http://schemas.openxmlformats.org/drawingml/2006/main}t"  # <a:t> text runs
-
-# Office Open XML parts never declare a DOCTYPE or entities. Reject any that do
-# before parsing — this is the stdlib-only defence against XXE / billion-laughs
-# entity-expansion attacks (ElementTree/expat would otherwise be vulnerable).
-# Avoids adding a defusedxml dependency, keeping the extractor dependency-free.
-def texts(xml_bytes):
-    if b"<!DOCTYPE" in xml_bytes or b"<!ENTITY" in xml_bytes:
-        raise ValueError("refusing XML with a DOCTYPE/ENTITY declaration")
-    root = ET.fromstring(xml_bytes)
-    return [e.text for e in root.iter(T) if e.text and e.text.strip()]
-
-def num(name):  # ".../slide12.xml" -> 12, for ordering
-    m = re.search(r"(\d+)\.xml$", name)
-    return int(m.group(1)) if m else 0
-
-with zipfile.ZipFile(sys.argv[1]) as z:
-    names = z.namelist()
-    slides = sorted((n for n in names if re.match(r"ppt/slides/slide\d+\.xml$", n)), key=num)
-    out = []
-    for s in slides:
-        sn = num(s)
-        body = " ".join(texts(z.read(s)))
-        notes = ""
-        # find this slide's notesSlide via its rels (correct pairing)
-        rels = "ppt/slides/_rels/%s.rels" % s.split("/")[-1]
-        if rels in names:
-            for m in re.finditer(r'Target="([^"]*notesSlide\d+\.xml)"', z.read(rels).decode("utf-8", "ignore")):
-                tgt = "ppt/" + m.group(1).replace("../", "")
-                if tgt in names:
-                    notes = " ".join(texts(z.read(tgt)))
-        out.append({"number": sn, "text": body, "notes": notes})
-    print(json.dumps(out, ensure_ascii=False, indent=2))
-```
-
-Run: `python3 pptx_extract.py deck.pptx`. Each entry gives the slide's on-slide
-text and its speaker notes. Draft narration primarily from `notes`, using `text`
-for the `on-screen` cue and titles. Delete the script when done.
+PowerPoint files are zip archives of slide XML plus a separate notes part per
+slide. When the user asks you to work from a `.pptx`, convert it to text whatever
+way works best on the user's machine — extract each slide's on-slide text and its
+speaker notes, keep them paired per slide number, and confirm the output looks
+right before drafting from it. Draft narration primarily from the **notes**, using
+the on-slide text for the `on-screen` cue and titles. Treat the file and its XML as
+untrusted input, and don't commit or leave behind any throwaway extraction script
+you write.

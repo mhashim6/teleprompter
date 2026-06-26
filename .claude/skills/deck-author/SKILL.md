@@ -34,10 +34,11 @@ Ask what the source is, then ingest it:
 - **Pasted text / notes** — use it directly.
 - **Images / screenshots** — read the image files yourself (vision). No script.
 - **PDF** — read it yourself with the Read tool (native PDF support). No script.
-- **PowerPoint (.pptx)** — generate a throwaway `python3` stdlib extractor on the
-  user's machine (see `references/format.md` → "Extracting a .pptx"), run it to
-  capture per-slide text **and speaker notes**, inspect the output to confirm it
-  looks right, then delete the extractor. Do not commit it.
+- **PowerPoint (.pptx)** — convert the deck to text whatever way works best on the
+  user's machine (see `references/format.md` → "Extracting a .pptx"): capture
+  per-slide text **and speaker notes**, then check the output looks right before
+  drafting from it. Treat the file as untrusted; don't commit any throwaway
+  extraction script you write.
 
 Speaker notes are the best raw material for narration — prefer them over the
 on-slide bullets when both exist.
@@ -106,5 +107,5 @@ Confirm the final deck and tell the user:
 - The deck JSON is always produced by `tools/deck.js`, never typed by hand.
 - All deck text reaches the app via `textContent`/`.value`; still, keep scripts
   free of control characters (the tool and `Schema` sanitise, but stay clean).
-- Don't commit the pptx extractor; generate, run, inspect, delete.
+- Don't commit any throwaway pptx extraction script; extract, verify, clean up.
 - Pause beats are absolute time (not pace-scaled); spend them deliberately.
