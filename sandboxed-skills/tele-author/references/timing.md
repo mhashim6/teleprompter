@@ -32,7 +32,9 @@ brackets are their own tokens and don't affect the adjacent word).
   `floor(total_seconds / 60) : (total_seconds % 60)` zero-padded to two digits.
 - **Implied pace** of a slide = `wordCount / estimatedMinutes` (words per minute).
   Flag the slide if this falls **outside 60–220 wpm** — below means it's too thin
-  for its target, above means it's too dense.
+  for its target, above means it's too dense. **Exception — cue mode** (see
+  `format.md`): a cue slide is almost all pause time, so its implied pace lands far
+  below 60 wpm by design. Don't flag it; judge it by total vs target instead.
 - **Delta vs target** = slide duration − `estimatedMinutes × 60000` ms; report as
   `±m:ss`.
 

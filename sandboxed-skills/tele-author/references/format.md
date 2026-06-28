@@ -61,6 +61,62 @@ The narration for slide two.
 - Pauses are **absolute** time — they do **not** scale with reading pace. They are
   excluded from word counts and never spoken. Spend them deliberately.
 
+## Content modes: full narration vs cue notes
+
+A deck is written in one of two styles. Decide which with the user up front, then
+write the deck that way (you can still write an individual slide in the other
+style when it suits — e.g. a fully-scripted opener inside a cue deck).
+
+- **Full narration** (default) — write the spoken prose; the *words* carry the
+  timing. Everything above describes this mode.
+- **Cue notes** (a.k.a. talking-point / summarised mode) — write short
+  talking-point bullets that the presenter expands in their own words, and place a
+  pause after each point sized to the time they need to speak it. Here the
+  *pauses* carry the timing, not the words.
+
+### Writing a cue slide
+
+- Each talking point is **its own short paragraph** beginning with `- `, separated
+  by blank lines. One point per paragraph — don't stack bullets on consecutive
+  lines inside a paragraph; lines within a paragraph are joined, so they'd run
+  together.
+- End each talking point with its speaking-budget pause, inline:
+  `- The point, in a few words. [[pause:30]]`.
+- Size each pause to the speaking time that point needs:
+  - quick beat / aside — `[[pause:5]]`
+  - minor point — `[[pause:10]]`–`[[pause:15]]`
+  - substantive point — `[[pause:20]]`–`[[pause:30]]`
+- **Make a slide's pauses sum to roughly its `target`.** The bullet words read in
+  seconds; the pauses are the budget, so they are what reaches the target.
+  `target` stays your one timing knob — to lengthen a slide, grow the pauses (or
+  add points), not the prose.
+
+### Cue mode and the duration report
+
+A cue slide is almost all pause time, so its implied reading pace
+(`wordCount / estimatedMinutes`) lands far below 60 wpm — which would flag nearly
+every cue slide as "too thin." **That is expected in cue mode — don't flag it.**
+It only means "few words for the minutes," which is the whole point. Judge a cue
+slide by its **total vs `target`** (driven by the pauses); see `timing.md`.
+
+### Worked example (cue slide)
+
+```markdown
+## 4 · Spark Champions: Responsibilities
+type: content
+on-screen: The Champion role and five key responsibilities.
+target: 2.5
+
+- Core Team is small; needs real engineers on the ground, bridging both ways — active contributors, not passive users. [[pause:30]]
+
+- Five asks: evolve Spark, support solutions end-to-end, co-create with the Core Team, bring real delivery input, surface reusable patterns. [[pause:30]]
+
+- Part builder, part tester, part scout, part advocate. [[pause:30]]
+```
+
+Three talking points, ~30 s each ≈ 1:30 of speaking room plus the few seconds of
+bullet text — a ~2.5-min slide whose timing is set by the pauses.
+
 ## Producing the deck JSON
 
 There is no compiler in this environment — you transcribe the `.deck.md` into the

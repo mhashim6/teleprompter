@@ -5,7 +5,8 @@ description: >-
   PDF, screenshots/images, or pasted text/notes. Use this when the user asks to
   "author a deck", "make a teleprompter from this PPT / these slides / these
   notes", "turn this deck into a teleprompter script", "write the narration for
-  my slides", or "build a teleprompter deck". Interviews the user, drafts the
+  my slides", "make talking-point / cue notes for my slides", or "build a
+  teleprompter deck". Interviews the user, drafts the
   spoken narration with smart pause beats, compiles it to the deck JSON via
   tools/deck.js, and confirms the expected duration and metadata before handing
   off decks/<slug>.json.
@@ -51,9 +52,16 @@ and a rough `target` minutes per slide — and confirm it. Also ask:
 
 - **Total target duration** for the talk (drives per-slide targets).
 - **Audience / purpose** (tunes register and depth).
+- **Content mode** — **full narration** (write the spoken prose) or **cue notes**
+  (short talking-point bullets the presenter expands in their own words, with a
+  pause after each point for speaking room). See `references/format.md` →
+  "Content modes". **If the user already asked for cues / talking points / a
+  summarised or notes-style deck, skip this question and author in cue mode;**
+  otherwise ask.
 - **Speaking style / voice.** Offer the user's own `blacktree-voice` skill if they
   want it in their personal blog voice, or a register: conversational, formal,
-  energetic, or neutral. Apply that voice when you draft.
+  energetic, or neutral. Apply that voice when you draft. (In cue mode the voice
+  shapes the few words you do write; the presenter supplies the rest live.)
 - **Language** (default en-GB to match the repo's existing decks).
 
 Use `AskUserQuestion` for these branching choices rather than guessing.
@@ -64,6 +72,13 @@ Write the spoken script per slide in the chosen voice. Place pause beats where
 the rhetoric calls for them — after a reveal, before a list, at a hard topic
 change — using `[[pause]]` (1s) or `[[pause:1.5]]` (custom). This semantic
 placement is *your* job; the tool only validates and reports.
+
+In **cue mode**, don't write full sentences: write one short talking-point bullet
+per paragraph and end each with a speaking-budget pause (`[[pause:20]]`–
+`[[pause:30]]` for a substantive point, less for minor ones), sizing the pauses to
+sum to the slide's `target`. The few bullet words read in seconds, so the pauses
+are what hits the target. See `references/format.md` → "Content modes" for the
+convention and the note that the report's pace flag is expected and ignored here.
 
 Write it all to `decks/<slug>.deck.md` in the format from `references/format.md`.
 Keep each paragraph as one logical beat (the tool collapses soft wrapping).
