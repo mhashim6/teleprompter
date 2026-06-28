@@ -46,7 +46,8 @@ TP.StudioUI = (function(){
         type:     s.type!=null ? String(s.type) : "",
         onScreen: s.onScreen!=null ? String(s.onScreen) : "",
         script:   script,
-        estimatedMinutes: est
+        estimatedMinutes: est,
+        hidden:   s.hidden === true   // Edit 1: preserve hidden flag through the editing model
       };
     });
     if(!slides.length) slides.push(Studio.blankSlide(1));
@@ -181,22 +182,41 @@ TP.StudioUI = (function(){
   }
 
   function buildCard(slide, i, n){
-    const card = document.createElement("div"); card.className = "studio-slide"; card.dataset.i = i;
+    const card = document.createElement("div");
+    card.className = "studio-slide" + (slide.hidden ? " is-hidden" : "");
+    card.dataset.i = i;
 
-    // head: number + reorder/duplicate/delete
+    // head: number + reorder/duplicate/delete + hide/show
     const head = document.createElement("div"); head.className = "studio-slide-head";
     const num = document.createElement("span"); num.className = "studio-slide-num"; num.textContent = "slide " + (i+1);
+    // Edit 1: "hidden" badge shown when the slide is hidden
+    const flag = document.createElement("span"); flag.className = "studio-slide-flag";
+    flag.textContent = "hidden"; flag.style.display = slide.hidden ? "" : "none";
     const sacts = document.createElement("div"); sacts.className = "studio-slide-acts";
     const up = btn("icon-btn small", "↑", "move up");      up.dataset.act = "up";   up.disabled = (i===0);
     const down = btn("icon-btn small", "↓", "move down");  down.dataset.act = "down"; down.disabled = (i===n-1);
     const dup = btn("icon-btn small", "⧉", "duplicate");   dup.dataset.act = "dup";
     const del = btn("icon-btn small", "✕", "delete");      del.dataset.act = "del";
+    // Edit 1: hide/show toggle button
+    const hideBtn = btn("icon-btn small", slide.hidden ? "show" : "hide", slide.hidden ? "show slide" : "hide slide");
+    hideBtn.dataset.act = "hide";
     up.onclick   = ()=>{ model.slides = Studio.moveSlide(model.slides, i, i-1); renderList('[data-i="'+(i-1)+'"] [data-act="up"]'); refreshTotal(); };
     down.onclick = ()=>{ model.slides = Studio.moveSlide(model.slides, i, i+1); renderList('[data-i="'+(i+1)+'"] [data-act="down"]'); refreshTotal(); };
     dup.onclick  = ()=>{ model.slides = Studio.duplicateSlide(model.slides, i); renderList('[data-i="'+(i+1)+'"] [data-f="title"]'); refreshTotal(); };
     del.onclick  = ()=>{ model.slides = Studio.removeSlide(model.slides, i); renderList('[data-i="'+Math.min(i, model.slides.length-1)+'"] [data-act="del"]'); refreshTotal(); };
-    sacts.appendChild(up); sacts.appendChild(down); sacts.appendChild(dup); sacts.appendChild(del);
-    head.appendChild(num); head.appendChild(sacts);
+    hideBtn.onclick = ()=>{
+      slide.hidden = !slide.hidden;
+      // re-render only the hide button and badge in place; no full list rebuild needed
+      const btn_ = el.list.querySelector('[data-i="'+i+'"] [data-act="hide"]');
+      const card_ = el.list.querySelector('[data-i="'+i+'"]');
+      const flag_ = card_ && card_.querySelector(".studio-slide-flag");
+      if(btn_){ btn_.textContent = slide.hidden ? "show" : "hide"; btn_.setAttribute("aria-label", slide.hidden ? "show slide" : "hide slide"); }
+      if(card_) card_.classList.toggle("is-hidden", !!slide.hidden);
+      if(flag_) flag_.style.display = slide.hidden ? "" : "none";
+      refreshTotal();
+    };
+    sacts.appendChild(up); sacts.appendChild(down); sacts.appendChild(dup); sacts.appendChild(del); sacts.appendChild(hideBtn);
+    head.appendChild(num); head.appendChild(flag); head.appendChild(sacts);
 
     // text fields
     const grid = document.createElement("div"); grid.className = "studio-grid";

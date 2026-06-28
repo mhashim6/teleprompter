@@ -15,6 +15,19 @@ TP.Engine = (function(){
 
   function clampPos(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
 
+  // Index of the next non-hidden slide strictly past `from` in direction dir (+1/-1).
+  // Returns -1 if none found.
+  function nextVisible(slides, from, dir){
+    for(let i=from+dir; i>=0 && i<slides.length; i+=dir){ if(!slides[i].hidden) return i; }
+    return -1;
+  }
+  // `from` if visible, else nearest visible forward, else backward; -1 only if ALL hidden.
+  function firstVisible(slides, from){
+    if(slides[from] && !slides[from].hidden) return from;
+    const f = nextVisible(slides, from, 1); if(f !== -1) return f;
+    return nextVisible(slides, from, -1);
+  }
+
   // A slide's tokens, flattened across paragraphs into one position sequence.
   function flatSeq(slide){
     if(!slide) return [];
@@ -52,5 +65,5 @@ TP.Engine = (function(){
     return Math.max(b.min, Math.min(b.max, stepped));
   }
 
-  return {clampPos, flatSeq, itemDuration, totalsMs, paceFromSlide};
+  return {clampPos, flatSeq, itemDuration, totalsMs, paceFromSlide, nextVisible, firstVisible};
 })();

@@ -142,11 +142,16 @@ TP.UI = (function(){
       [el.libBtn,  "menu — load or create decks", "end"]
     ];
     specs.forEach(([target, text, align])=>{
-      const group = target && target.closest && target.closest(".group");
-      if(!group) return;
+      if(!target) return;
+      // Edit 3: anchor to the control itself (smallest box); <input type=range> can't hold
+      // children so it falls back to its .group (centred arrow still points at the slider).
+      const anchor = (target.tagName === "INPUT") ? (target.closest && target.closest(".group")) : target;
+      if(!anchor) return;
+      anchor.classList.add("coach-anchor");
       const tip = spanWith("coach coach-"+align, text);
-      group.appendChild(tip);
-      const entry = { node:tip, target:target, off:null };
+      tip.setAttribute("aria-hidden","true");   // don't pollute the control's accessible name
+      anchor.appendChild(tip);
+      const entry = { node:tip, target:target, anchor:anchor, off:null };
       entry.off = ()=> hideCoach(entry);
       target.addEventListener("pointerdown", entry.off);
       coachMarks.push(entry);
@@ -156,12 +161,17 @@ TP.UI = (function(){
     const i = coachMarks.indexOf(entry); if(i===-1) return;
     coachMarks.splice(i,1);
     entry.target.removeEventListener("pointerdown", entry.off);
+    entry.anchor.classList.remove("coach-anchor");  // Edit 3: clean up the position anchor
     entry.node.classList.add("is-hiding");
     const node = entry.node;
     setTimeout(()=> node.remove(), reduceMotion ? 0 : 240);
   }
   function removeCoachMarks(){             // immediate teardown of any remaining
-    coachMarks.forEach(e=>{ e.target.removeEventListener("pointerdown", e.off); e.node.remove(); });
+    coachMarks.forEach(e=>{
+      e.target.removeEventListener("pointerdown", e.off);
+      e.anchor.classList.remove("coach-anchor");    // Edit 3: clean up the position anchor
+      e.node.remove();
+    });
     coachMarks = [];
   }
 
@@ -195,6 +205,11 @@ TP.UI = (function(){
           span.setAttribute("aria-hidden","true");
           span.title = (tok.ms/1000)+"s pause";
           span.textContent = "···";       // ··· hold marker
+          // Edit 4: faint seconds label; derived from our own number, never deck text.
+          const dur = document.createElement("span");
+          dur.className = "pause-dur";
+          dur.textContent = VM.pauseLabel(tok.ms);
+          span.appendChild(dur);
         } else {
           span.className = "w"; span.dataset.kind = "word"; span.textContent = tok.text;
         }
@@ -382,10 +397,13 @@ TP.UI = (function(){
     },
     onComplete(){
       saveNow();
-      const last = P.position().si >= P.deck().slides.length-1;
+      // Edit 1: `last` is true only when there is no further visible slide (respects hidden).
+      const last = E.nextVisible(P.deck().slides, P.position().si, +1) === -1;
       el.cue.textContent = last ? "end of deck" : "end of slide § advance when ready";
       el.cue.classList.remove("hidden");
-      if(prefs.autoAdvance && !last) setTimeout(()=>P.next(), C.AUTOADVANCE_MS);
+      // Edit 2: auto-advance then immediately play (a completed slide has S.playing=false,
+      // so gotoSlide's wasPlaying won't fire; play explicitly here).
+      if(prefs.autoAdvance && !last) setTimeout(()=>{ P.next(); P.play(); }, C.AUTOADVANCE_MS);
     },
     // A throwing render callback can't break playback; just log it.
     onError(e){ if(typeof console!=="undefined") console.error("teleprompter render error:", e); }

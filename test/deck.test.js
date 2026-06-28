@@ -259,3 +259,49 @@ test("parseArgs: reads input, --wpm, --out, --fill-beats", () => {
   assert.strictEqual(a.fillBeats, true);
   assert.strictEqual(a.out, "x.json");
 });
+
+/* ---- Edit 1: hidden directive in parseDeckMd and buildRawDeck ---- */
+
+test("parseDeckMd: reads hidden:true directive", () => {
+  const md = [
+    "## 1 · Visible Slide",
+    "",
+    "narration here.",
+    "",
+    "## 2 · Hidden Slide",
+    "hidden: true",
+    "",
+    "narration here too.",
+  ].join("\n");
+  const { slides } = deck.parseDeckMd(md);
+  assert.strictEqual(slides[0].hidden, undefined, "visible slide has no hidden property");
+  assert.strictEqual(slides[1].hidden, true,       "hidden: true is parsed");
+});
+
+test("parseDeckMd: hidden:yes and hidden:1 are truthy", () => {
+  const yes = deck.parseDeckMd("## 1 · S\nhidden: yes\n\nx.").slides[0];
+  const one = deck.parseDeckMd("## 1 · S\nhidden: 1\n\nx.").slides[0];
+  assert.strictEqual(yes.hidden, true);
+  assert.strictEqual(one.hidden, true);
+});
+
+test("parseDeckMd: hidden:false is falsy", () => {
+  const s = deck.parseDeckMd("## 1 · S\nhidden: false\n\nx.").slides[0];
+  assert.strictEqual(s.hidden, false);
+});
+
+test("buildRawDeck: includes hidden:true when set", () => {
+  const parsed = deck.parseDeckMd([
+    "## 1 · Visible",
+    "",
+    "text.",
+    "",
+    "## 2 · Hidden",
+    "hidden: true",
+    "",
+    "text.",
+  ].join("\n"));
+  const raw = deck.buildRawDeck(parsed);
+  assert.ok(!("hidden" in raw.slides[0]), "visible slide must omit hidden");
+  assert.strictEqual(raw.slides[1].hidden, true, "hidden slide must carry hidden:true");
+});

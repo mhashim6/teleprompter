@@ -102,7 +102,8 @@ TP.Schema = (function(){
         estimatedMinutes: num(s.estimatedMinutes),
         wordCount: num(s.wordCount)!=null ? s.wordCount : words,
         paragraphs: structured,
-        total: seq                  // position space: words + pauses
+        total: seq,                 // position space: words + pauses
+        hidden: s.hidden === true   // only literal true counts; absent/junk -> false
       };
     });
     const meta = (raw && typeof raw==="object" && !Array.isArray(raw) && raw.meta) || {};

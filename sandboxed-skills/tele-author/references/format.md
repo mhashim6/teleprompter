@@ -44,9 +44,11 @@ The narration for slide two.
   (no number → auto-indexed from position). A heading whose text merely *starts*
   with digits (e.g. `## 2024 Review`) is treated as a title, not a number.
 - **Directives** are optional lines directly under the heading, before any blank
-  line: `type:`, `on-screen:` (alias `onscreen`), and `target:` (estimated
-  minutes, a number). The first blank line or non-directive line ends the
-  directive block; everything after is narration.
+  line: `type:`, `on-screen:` (alias `onscreen`), `target:` (estimated minutes,
+  a number), and `hidden:` (`true`/`yes`/`1` to mark the slide hidden — the
+  player will skip it; omit or set to `false` for a visible slide). The first
+  blank line or non-directive line ends the directive block; everything after is
+  narration.
 - **Narration** is the rest of the slide block. Paragraphs are separated by blank
   lines; soft-wrapped lines inside a paragraph are joined with a single space, so
   wrap freely. Inline `[[pause]]` / `[[pause:N]]` / `[[pause:Nms]]` / `[[beat]]`

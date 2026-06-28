@@ -100,7 +100,8 @@ This is the interop surface. Keep it stable, or evolve it through the tolerant n
       "onScreen": "string",      // what the audience sees; shown under the meta line
       "wordCount": 550,          // number; display only; MUST exclude pause tokens
       "script": "string",        // full narration, paragraphs separated by blank lines
-      "paragraphs": ["string"]   // same narration split into advance/scroll units
+      "paragraphs": ["string"],  // same narration split into advance/scroll units
+      "hidden": true             // optional boolean; player skips this slide (omit or false = visible)
     }
   ]
 }
@@ -109,6 +110,8 @@ This is the interop surface. Keep it stable, or evolve it through the tolerant n
 ### 3.1 Which fields the app consumes
 
 `paragraphs` is the primary content. If absent, the app falls back to `script` split on blank lines, then to `text`. `number`, `title`, `type`, `onScreen`, `estimatedMinutes` drive the meta strip and the next-slide hint. `wordCount` is display only; if absent it is computed (words, excluding pauses). `meta.title` and `meta.slideRange` label the deck. Everything in `meta.schema` and `slide.id` is informational.
+
+`hidden` (optional boolean, default false): when `true`, the player skips this slide in all navigation — `next`, `prev`, arrow keys, the next-slide hint, and the end-of-deck cue all skip hidden slides. The slide's index in the `slides` array is unchanged (saved positions are still aligned to the full array). The studio dims the card and excludes it from the deck-total estimate. Omit the field (or set it to `false`) for a visible slide; the serialiser emits `hidden` only when `true`.
 
 ### 3.2 Pause tokens
 

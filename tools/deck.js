@@ -33,7 +33,7 @@ const { Schema, Engine, Const } = window.TP;
 // "## 1 - Title", or "## Title" (no number -> auto-indexed later).
 const HEADING_RE = /^##\s+(?:(\d+(?:\.\d+)?)\s*[·:.\-]\s+)?(.+?)\s*$/;
 // A per-slide directive line directly under the heading.
-const DIRECTIVE_RE = /^(type|on-screen|on\s?screen|onscreen|target)\s*:\s*(.*)$/i;
+const DIRECTIVE_RE = /^(type|on-screen|on\s?screen|onscreen|target|hidden)\s*:\s*(.*)$/i;
 // A trailing "# comment" on a frontmatter line (only when whitespace-separated).
 const TRAILING_COMMENT_RE = /\s+#.*$/;
 // Does a paragraph already end on a pause beat?
@@ -108,6 +108,7 @@ function parseDeckMd(text) {
       if (key === "type") slide.type = val;
       else if (key === "onscreen" || key === "on-screen") slide.onScreen = val;
       else if (key === "target") slide.target = num(val);
+      else if (key === "hidden") slide.hidden = /^(true|yes|1)$/i.test(val);
     }
 
     slide.script = normaliseNarration(block.slice(i).join("\n"));
@@ -156,6 +157,7 @@ function buildRawDeck(parsed) {
     if (s.onScreen) slide.onScreen = s.onScreen;
     if (s.target != null) slide.estimatedMinutes = s.target;
     slide.script = s.script || "";
+    if (s.hidden) slide.hidden = true;   // Edit 1: emit only when true
     return slide;
   });
 

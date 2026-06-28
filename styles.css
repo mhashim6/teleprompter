@@ -152,6 +152,8 @@ button{font-family:inherit; color:inherit; cursor:pointer}
   font-size:.62em; vertical-align:middle; user-select:none; transition:color .18s ease, opacity .18s ease}
 .pause.done{opacity:.3}
 .pause.cur{color:var(--text-accent); opacity:1}
+/* Edit 4: faint seconds label appended to each pause beat (··· 1s); inherits pause colour/opacity */
+.pause-dur{font-size:.7em; opacity:.6; margin-left:.35em; letter-spacing:0}
 #app:focus{outline:none}
 
 /* next-slide hint + cue */
@@ -337,6 +339,12 @@ code{background:var(--surface-inset); padding:1px 5px; font-size:.9em}
 .studio-target.over{color:var(--accent); font-weight:600}
 .studio-target.under{color:var(--text-muted)}
 
+/* Edit 1: dimmed card + "hidden" badge for slides the player will skip */
+.studio-slide.is-hidden{opacity:.5}
+.studio-slide-flag{
+  font-size:10px; letter-spacing:var(--track-label); text-transform:uppercase;
+  color:var(--text-accent); font-weight:700; margin-left:6px;
+}
 .studio-addrow{margin:18px 0 6px; text-align:center}
 .studio-newrow{padding:4px 16px 6px}
 
@@ -348,11 +356,14 @@ code{background:var(--surface-inset); padding:1px 5px; font-size:.9em}
 
 /* ==========================================================================
    WELCOME  ->  coach-marks for the self-running landing session
-   Small parchment chips anchored above their control via the group's relative
-   box (no JS positioning, so they track the buttons on resize). Lifecycle is
-   JS-driven (ui.js loadWelcome / dismissCoachMarks); these are styles only.
+   Small parchment chips anchored above their control. Edit 3: each tip is now
+   anchored to the control itself (.coach-anchor), so the arrow points at the
+   right element. The <input type=range> falls back to its .group (centred
+   arrow still lands on the slider). Lifecycle is JS-driven; these are styles.
    ========================================================================== */
-.controls .group{position:relative}      /* anchor box for coach-marks (inert) */
+.controls .group{position:relative}      /* harmless; group still positions correctly */
+/* Edit 3: the actual anchor for the tip — added/removed by JS per coach mark lifecycle */
+.coach-anchor{position:relative}
 .coach{
   position:absolute; bottom:100%; margin-bottom:12px; z-index:30;
   pointer-events:none; white-space:nowrap; max-width:calc(100vw - 24px);

@@ -51,7 +51,10 @@ TP.Prompter = (function(){
     setScheduler(s){ if(s&&s.set) sched.set=s.set; if(s&&s.clear) sched.clear=s.clear; },
     load(deck, pos){
       this.pause(); S.deck=deck;
-      S.si = E.clampPos(pos&&pos.slideIndex||0, 0, deck.slides.length-1);
+      const clamped = E.clampPos(pos&&pos.slideIndex||0, 0, deck.slides.length-1);
+      // snap to nearest visible slide so a saved position on a hidden slide still works
+      const snapped = E.firstVisible(deck.slides, clamped);
+      S.si = snapped !== -1 ? snapped : clamped; // fall back to clamped if all hidden (degenerate)
       S.word = E.clampPos(pos&&pos.word||0, 0, total());
       fire("onSlide"); fire("onTick");
     },
@@ -62,11 +65,25 @@ TP.Prompter = (function(){
     restartSlide(){ this.pause(); this.seek(0); },
     gotoSlide(i){
       if(!S.deck) return;
+      const wasPlaying = S.playing;   // Edit 2: preserve play state across navigation
       this.pause();
-      S.si = E.clampPos(i,0,S.deck.slides.length-1); S.word=0;
+      const clamped = E.clampPos(i,0,S.deck.slides.length-1);
+      // snap to nearest visible slide; fall back to clamped if the deck is all hidden
+      const snapped = E.firstVisible(S.deck.slides, clamped);
+      S.si = snapped !== -1 ? snapped : clamped;
+      S.word=0;
       fire("onSlide"); fire("onTick");
+      if(wasPlaying) this.play();     // Edit 2: resume if we were playing before the jump
     },
-    next(){ if(S.deck && S.si < S.deck.slides.length-1) this.gotoSlide(S.si+1); },
-    prev(){ if(S.deck && S.si > 0) this.gotoSlide(S.si-1); }
+    next(){
+      if(!S.deck) return;
+      const nv = E.nextVisible(S.deck.slides, S.si, 1);
+      if(nv !== -1) this.gotoSlide(nv);
+    },
+    prev(){
+      if(!S.deck) return;
+      const nv = E.nextVisible(S.deck.slides, S.si, -1);
+      if(nv !== -1) this.gotoSlide(nv);
+    }
   };
 })();

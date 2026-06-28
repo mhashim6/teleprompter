@@ -17,6 +17,10 @@ const word = t => ({kind:"word", text:t});
 function deckOf(...slides){
   return { slides: slides.map(toks => ({ total: toks.length, paragraphs:[{tokens:toks}] })) };
 }
+// Build a deck where each element is {tokens, hidden}
+function deckOfSlides(...descs){
+  return { slides: descs.map(d => ({ total: d.tokens.length, paragraphs:[{tokens:d.tokens}], hidden: !!d.hidden })) };
+}
 
 // A fake scheduler: holds at most one pending timer (the prompter chains one at
 // a time). fireNext() runs it, which advances a word and schedules the next.
@@ -133,6 +137,74 @@ test("load fires onSlide before onTick", () => {
   assert.ok(iSlide >= 0 && iTick >= 0);
   assert.ok(iSlide < iTick, "onSlide must precede onTick on load");
   assert.strictEqual(calls.order[calls.order.length-1], "onTick");
+});
+
+/* ---- Edit 1: hidden-slide skip in next/prev/load/gotoSlide ---- */
+
+test("next() skips hidden slides", () => {
+  // deck: visible, hidden, visible
+  fresh(deckOfSlides({tokens:[word("a")]}, {tokens:[word("b")], hidden:true}, {tokens:[word("c")]}), {slideIndex:0});
+  P.next();
+  assert.strictEqual(P.position().si, 2, "should skip the hidden slide at index 1");
+});
+
+test("prev() skips hidden slides", () => {
+  fresh(deckOfSlides({tokens:[word("a")]}, {tokens:[word("b")], hidden:true}, {tokens:[word("c")]}), {slideIndex:2});
+  P.prev();
+  assert.strictEqual(P.position().si, 0, "should skip the hidden slide at index 1");
+});
+
+test("next() no-ops when no further visible slides", () => {
+  fresh(deckOfSlides({tokens:[word("a")]}, {tokens:[word("b")], hidden:true}), {slideIndex:0});
+  P.next();
+  assert.strictEqual(P.position().si, 0, "no visible slide ahead, should stay put");
+});
+
+test("prev() no-ops when no earlier visible slides", () => {
+  fresh(deckOfSlides({tokens:[word("a")], hidden:true}, {tokens:[word("b")]}), {slideIndex:1});
+  P.prev();
+  assert.strictEqual(P.position().si, 1, "no visible slide behind, should stay put");
+});
+
+test("load snaps a saved position on a hidden slide to the nearest visible", () => {
+  const deck = deckOfSlides({tokens:[word("a")]}, {tokens:[word("b")], hidden:true}, {tokens:[word("c")]});
+  const {calls} = fresh(deck, {slideIndex:1});  // position saved on the hidden slide
+  // firstVisible from index 1 should jump to index 2 (forward) or 0 (backward); 2 is tried first
+  assert.strictEqual(P.position().si, 2, "should snap forward past the hidden slide");
+  assert.ok(calls.onSlide > 0, "onSlide fired");
+});
+
+test("load snaps backward when only backward visible slides exist", () => {
+  const deck = deckOfSlides({tokens:[word("a")]}, {tokens:[word("b")], hidden:true});
+  fresh(deck, {slideIndex:1});  // saved on hidden, no forward visible
+  assert.strictEqual(P.position().si, 0, "should snap backward to index 0");
+});
+
+test("gotoSlide snaps hidden target to nearest visible", () => {
+  fresh(deckOfSlides({tokens:[word("a")]}, {tokens:[word("b")], hidden:true}, {tokens:[word("c")]}), {slideIndex:0});
+  P.gotoSlide(1);   // target is hidden
+  assert.strictEqual(P.position().si, 2, "should snap forward to index 2");
+});
+
+/* ---- Edit 2: play-state preservation through gotoSlide ---- */
+
+test("gotoSlide resumes playback when wasPlaying=true", () => {
+  const {fake} = fresh(deckOf([word("a"),word("b")],[word("c")]), {slideIndex:0});
+  P.play();
+  assert.strictEqual(P.position().playing, true);
+  P.gotoSlide(1);   // jump while playing
+  assert.strictEqual(P.position().si, 1);
+  assert.strictEqual(P.position().playing, true, "should be playing on the new slide");
+  assert.ok(fake.size >= 1, "timer should be armed");
+});
+
+test("gotoSlide stays paused when wasPlaying=false", () => {
+  fresh(deckOf([word("a"),word("b")],[word("c")]), {slideIndex:0});
+  // do NOT call P.play()
+  assert.strictEqual(P.position().playing, false);
+  P.gotoSlide(1);
+  assert.strictEqual(P.position().si, 1);
+  assert.strictEqual(P.position().playing, false, "should remain paused");
 });
 
 test("a throwing onTick does not stop the chain and reaches onError", () => {

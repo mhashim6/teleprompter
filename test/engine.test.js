@@ -122,3 +122,69 @@ test("paceFromSlide: missing data -> null", () => {
 test("paceFromSlide: custom bounds honoured", () => {
   assert.strictEqual(E.paceFromSlide(1000, 2, {min:10, max:300, step:10}), 300);
 });
+
+/* ---- nextVisible / firstVisible (Edit 1 — hide slides) ---- */
+
+const vis  = (n) => ({ hidden: false, number: n });   // visible slide stub
+const hid  = (n) => ({ hidden: true,  number: n });   // hidden slide stub
+
+test("nextVisible: no hidden slides -> normal forward scan", () => {
+  const slides = [vis(1), vis(2), vis(3)];
+  assert.strictEqual(E.nextVisible(slides, 0, 1), 1);
+  assert.strictEqual(E.nextVisible(slides, 1, 1), 2);
+  assert.strictEqual(E.nextVisible(slides, 2, 1), -1);   // past end
+});
+
+test("nextVisible: no hidden slides -> normal backward scan", () => {
+  const slides = [vis(1), vis(2), vis(3)];
+  assert.strictEqual(E.nextVisible(slides, 2, -1), 1);
+  assert.strictEqual(E.nextVisible(slides, 1, -1), 0);
+  assert.strictEqual(E.nextVisible(slides, 0, -1), -1);  // before start
+});
+
+test("nextVisible: skips interior hidden slides (forward)", () => {
+  const slides = [vis(1), hid(2), hid(3), vis(4)];
+  assert.strictEqual(E.nextVisible(slides, 0, 1), 3);    // jumps over hid(2)+hid(3)
+});
+
+test("nextVisible: skips interior hidden slides (backward)", () => {
+  const slides = [vis(1), hid(2), hid(3), vis(4)];
+  assert.strictEqual(E.nextVisible(slides, 3, -1), 0);   // jumps over hid(2)+hid(3)
+});
+
+test("nextVisible: trailing hidden -> -1 going forward", () => {
+  const slides = [vis(1), vis(2), hid(3)];
+  assert.strictEqual(E.nextVisible(slides, 1, 1), -1);
+});
+
+test("nextVisible: leading hidden -> -1 going backward", () => {
+  const slides = [hid(1), vis(2), vis(3)];
+  assert.strictEqual(E.nextVisible(slides, 1, -1), -1);
+});
+
+test("nextVisible: all hidden -> -1 in both directions", () => {
+  const slides = [hid(1), hid(2), hid(3)];
+  assert.strictEqual(E.nextVisible(slides, 0, 1), -1);
+  assert.strictEqual(E.nextVisible(slides, 2, -1), -1);
+});
+
+test("firstVisible: target visible -> returns target", () => {
+  const slides = [vis(1), vis(2), vis(3)];
+  assert.strictEqual(E.firstVisible(slides, 1), 1);
+});
+
+test("firstVisible: target hidden -> nearest visible forward", () => {
+  const slides = [vis(1), hid(2), vis(3)];
+  assert.strictEqual(E.firstVisible(slides, 1), 2);
+});
+
+test("firstVisible: target hidden, nothing forward -> nearest backward", () => {
+  const slides = [vis(1), hid(2)];
+  assert.strictEqual(E.firstVisible(slides, 1), 0);
+});
+
+test("firstVisible: all hidden -> -1", () => {
+  const slides = [hid(1), hid(2)];
+  assert.strictEqual(E.firstVisible(slides, 0), -1);
+  assert.strictEqual(E.firstVisible(slides, 1), -1);
+});

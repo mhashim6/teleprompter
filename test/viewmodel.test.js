@@ -5,6 +5,8 @@ const test = require("node:test");
 const assert = require("node:assert");
 
 global.window = global;
+require("../src/constants.js");   // engine reads TP.Const at load
+require("../src/engine.js");      // viewmodel reuses Engine.nextVisible (load order matches index.html)
 require("../src/viewmodel.js");
 const VM = window.TP.ViewModel;
 
@@ -87,4 +89,54 @@ test("nextHint: last slide", () => {
 test("scrollTarget: anchors a token within the reader height", () => {
   assert.strictEqual(VM.scrollTarget(1000, 30, 600, 0.22), 1000 - 600*0.22 + 15);
   assert.strictEqual(VM.scrollTarget(0, 40, 800, 0.5), 0 - 400 + 20);
+});
+
+/* ---- nextHint with hidden slides (Edit 1) ---- */
+
+test("nextHint: skips hidden slides when choosing the next hint", () => {
+  const deck = { slides:[
+    {number:1},
+    {number:2, hidden:true},
+    {number:3, title:"Three", type:"content"}
+  ]};
+  // From si=0, the next visible is index 2 (skip the hidden at index 1)
+  const h = VM.nextHint(deck, 0);
+  assert.strictEqual(h.kind, "next");
+  assert.strictEqual(h.number, 3);
+  assert.strictEqual(h.title, "Three");
+});
+
+test("nextHint: reports last when only trailing hidden slides remain", () => {
+  const deck = { slides:[
+    {number:1},
+    {number:2, hidden:true},
+    {number:3, hidden:true}
+  ]};
+  // From si=0, all forward slides are hidden -> kind:last
+  assert.deepStrictEqual(VM.nextHint(deck, 0), {kind:"last"});
+});
+
+test("nextHint: works normally when no slides are hidden", () => {
+  const deck = { slides:[{number:1},{number:2, title:"Two", type:"q-and-a"},{number:3}] };
+  const h = VM.nextHint(deck, 0);
+  assert.strictEqual(h.kind, "next");
+  assert.strictEqual(h.number, 2);
+});
+
+/* ---- pauseLabel (Edit 4) ---- */
+
+test("pauseLabel: 1000ms -> '1s'", () => {
+  assert.strictEqual(VM.pauseLabel(1000), "1s");
+});
+
+test("pauseLabel: 2500ms -> '2.5s'", () => {
+  assert.strictEqual(VM.pauseLabel(2500), "2.5s");
+});
+
+test("pauseLabel: 500ms -> '0.5s'", () => {
+  assert.strictEqual(VM.pauseLabel(500), "0.5s");
+});
+
+test("pauseLabel: 1200ms -> '1.2s'", () => {
+  assert.strictEqual(VM.pauseLabel(1200), "1.2s");
 });

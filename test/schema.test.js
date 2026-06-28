@@ -238,6 +238,25 @@ test("slug lowercases, dashes non-alphanumerics, trims", () => {
   assert.equal(slug("***"), "");
 });
 
+/* ---- hidden field (Edit 1) ---- */
+
+test("hidden normalises to true only for literal true", () => {
+  const d = normalise({ slides: [{ text:"a", hidden:true }] }, "f");
+  assert.strictEqual(d.slides[0].hidden, true);
+});
+
+test("hidden is false for absent, false, junk values", () => {
+  const cases = [
+    { text:"a" },              // absent
+    { text:"a", hidden:false },
+    { text:"a", hidden:1 },    // junk
+    { text:"a", hidden:"true" },
+    { text:"a", hidden:null },
+  ];
+  const d = normalise({ slides: cases }, "f");
+  d.slides.forEach((s, i) => assert.strictEqual(s.hidden, false, "case "+i));
+});
+
 /* ---- slideRange ---- */
 
 test("slideRange uses meta when given, else derives from numbers", () => {

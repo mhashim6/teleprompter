@@ -93,6 +93,7 @@ TP.Studio = (function(){
       if(onScreen) out.onScreen = onScreen;
       if(script)   out.script = script;
       if(Number.isFinite(est) && est > 0) out.estimatedMinutes = est;
+      if(s.hidden) out.hidden = true;   // Edit 1: emit only when true — keeps JSON clean
       return out;
     });
     return { meta, slides };
@@ -112,6 +113,7 @@ TP.Studio = (function(){
   function estimateDeck(rawDeck, wpm){
     const deck = Schema.normalise(rawDeck || { slides:[] });
     return deck.slides.reduce((a,s)=>{
+      if(s.hidden) return a;          // Edit 1: hidden slides are excluded from the total
       const e = estimateNorm(s, wpm);
       return { words: a.words + e.words, ms: a.ms + e.ms };
     }, { words:0, ms:0 });

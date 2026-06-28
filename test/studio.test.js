@@ -196,3 +196,32 @@ test("estimateDeck: empty deck is zero", () => {
   assert.deepStrictEqual(S.estimateDeck({slides:[]}, 130), { words:0, ms:0 });
   assert.deepStrictEqual(S.estimateDeck(null, 130), { words:0, ms:0 });
 });
+
+/* ---- Edit 1: hidden field in serialize / estimateDeck ---- */
+
+test("serialize: emits hidden:true only when set", () => {
+  const form = {
+    meta:{ title:"T" },
+    slides:[
+      { title:"Vis",  script:"hello", hidden:false },
+      { title:"Hid",  script:"world", hidden:true  },
+      { title:"Norm", script:"foo"                 }  // absent
+    ]
+  };
+  const raw = S.serialize(form);
+  assert.ok(!("hidden" in raw.slides[0]), "false hidden must be omitted");
+  assert.strictEqual(raw.slides[1].hidden, true,  "true hidden must be emitted");
+  assert.ok(!("hidden" in raw.slides[2]), "absent hidden must be omitted");
+});
+
+test("estimateDeck: excludes hidden slides from words and ms", () => {
+  // Two identical slides; one visible, one hidden.
+  const deck = { slides:[
+    { script:"one two three" },                // 3 words, visible
+    { script:"one two three", hidden:true }    // same but hidden -> skipped
+  ]};
+  const e = S.estimateDeck(deck, 120);
+  const visible = S.estimateSlide({ script:"one two three" }, 120);
+  assert.strictEqual(e.words, visible.words, "hidden slide should not add words");
+  assert.strictEqual(e.ms,    visible.ms,    "hidden slide should not add ms");
+});
